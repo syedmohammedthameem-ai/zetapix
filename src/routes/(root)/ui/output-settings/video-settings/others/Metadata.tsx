@@ -1,0 +1,341 @@
+import { AnimatePresence, motion } from 'framer-motion'
+import cloneDeep from 'lodash/cloneDeep'
+import { useCallback } from 'react'
+import { useSnapshot } from 'valtio'
+
+import Card from '@/components/Card'
+import DatePicker from '@/components/DatePicker'
+import Divider from '@/components/Divider'
+import Switch from '@/components/Switch'
+import TextArea from '@/components/TextArea'
+import TextInput from '@/components/TextInput'
+import type { MediaMetadataConfig } from '@/types/app'
+import { slideDownTransition } from '@/utils/animation'
+import {
+  appProxy,
+  normalizeBatchMediaConfig,
+  videoMetadataConfigInitialState,
+} from '../../../../-state'
+
+type MetadataProps = {
+  mediaIndex: number
+}
+
+function Metadata({ mediaIndex }: MetadataProps) {
+  const {
+    state: {
+      media,
+      isCompressing,
+      isProcessCompleted,
+      commonConfigForBatchCompression,
+      isLoadingMediaFiles,
+    },
+  } = useSnapshot(appProxy)
+  const video =
+    media.length > 0 && mediaIndex >= 0 && media[mediaIndex].type === 'video'
+      ? media[mediaIndex]
+      : null
+  const { config } = video ?? {}
+  const { shouldStripMetadata, metadataConfig, convertToExtension } =
+    config ?? commonConfigForBatchCompression.videoConfig ?? {}
+
+  const updateMetadataField = useCallback(
+    (
+      field: keyof MediaMetadataConfig,
+      value: string | boolean | null | undefined,
+    ) => {
+      if (
+        mediaIndex >= 0 &&
+        appProxy.state.media[mediaIndex].type === 'video' &&
+        appProxy.state.media[mediaIndex]?.config
+      ) {
+        if (!appProxy.state.media[mediaIndex]?.config?.metadataConfig) {
+          appProxy.state.media[mediaIndex].config.metadataConfig = cloneDeep(
+            videoMetadataConfigInitialState,
+          )
+        }
+        ;(appProxy.state.media[mediaIndex].config.metadataConfig![
+          field
+        ] as any) = value
+
+        if (
+          field === 'creationTimeRaw' &&
+          appProxy.state.media[mediaIndex]?.config?.metadataConfig
+        ) {
+          appProxy.state.media[mediaIndex].config.metadataConfig![
+            'creationTime'
+          ] = (value as any)?.toDate?.('')?.toISOString()
+        }
+
+        appProxy.state.media[mediaIndex].isConfigDirty = true
+      } else {
+        if (appProxy.state.media.length > 1) {
+          if (
+            !appProxy.state?.commonConfigForBatchCompression?.videoConfig
+              ?.metadataConfig
+          ) {
+            appProxy.state.commonConfigForBatchCompression.videoConfig.metadataConfig =
+              cloneDeep(videoMetadataConfigInitialState)
+          }
+          ;(appProxy.state.commonConfigForBatchCompression.videoConfig
+            .metadataConfig![field] as any) = value
+
+          if (
+            field === 'creationTimeRaw' &&
+            appProxy.state.commonConfigForBatchCompression?.videoConfig
+              ?.metadataConfig
+          ) {
+            appProxy.state.commonConfigForBatchCompression.videoConfig
+              .metadataConfig!['creationTime'] = (value as any)
+              ?.toDate?.('')
+              ?.toISOString()
+          }
+
+          normalizeBatchMediaConfig()
+        }
+      }
+    },
+    [mediaIndex],
+  )
+
+  const handleStripMetadataToggle = useCallback(() => {
+    if (
+      mediaIndex >= 0 &&
+      appProxy.state.media[mediaIndex].type === 'video' &&
+      appProxy.state.media[mediaIndex]?.config
+    ) {
+      appProxy.state.media[mediaIndex].config.shouldStripMetadata =
+        !appProxy.state.media[mediaIndex].config.shouldStripMetadata
+      appProxy.state.media[mediaIndex].isConfigDirty = true
+
+      if (appProxy.state.media[mediaIndex].config.shouldStripMetadata) {
+        appProxy.state.media[mediaIndex].config.metadataConfig = null
+      } else {
+        appProxy.state.media[mediaIndex].config.metadataConfig = cloneDeep(
+          videoMetadataConfigInitialState,
+        )
+      }
+    } else {
+      if (appProxy.state.media.length > 1) {
+        appProxy.state.commonConfigForBatchCompression.videoConfig.shouldStripMetadata =
+          !appProxy.state.commonConfigForBatchCompression.videoConfig
+            .shouldStripMetadata
+
+        if (
+          appProxy.state.commonConfigForBatchCompression.videoConfig
+            .shouldStripMetadata
+        ) {
+          appProxy.state.commonConfigForBatchCompression.videoConfig.metadataConfig =
+            null
+        } else {
+          appProxy.state.commonConfigForBatchCompression.videoConfig.metadataConfig =
+            cloneDeep(videoMetadataConfigInitialState)
+        }
+
+        normalizeBatchMediaConfig()
+      }
+    }
+  }, [mediaIndex])
+
+  const shouldDisableInput =
+    media.length === 0 ||
+    isCompressing ||
+    isProcessCompleted ||
+    isLoadingMediaFiles ||
+    convertToExtension === 'gif'
+
+  return (
+    <>
+      <Switch
+        isSelected={shouldStripMetadata}
+        onValueChange={handleStripMetadataToggle}
+        isDisabled={shouldDisableInput}
+      >
+        <div className="flex justify-center items-center">
+          <span className="text-gray-600 dark:text-gray-400 block mr-2 text-sm">
+            Strip Metadata
+          </span>
+        </div>
+      </Switch>
+      <AnimatePresence mode="wait">
+        {!shouldStripMetadata ? (
+          <Card className="px-2 my-2 pb-4 shadow-none border-1 dark:border-none">
+            <motion.div {...slideDownTransition} className="space-y-4 mt-2">
+              <div className="text-zinc-700 dark:text-zinc-400">
+                <p className="text-xs  italic">
+                  - Leave the field empty to keep the original
+                </p>{' '}
+                <p className="text-xs  italic">
+                  - Or, add a whitespace to remove the original
+                </p>
+              </div>
+              <div>
+                <TextInput
+                  type="text"
+                  label="Title"
+                  placeholder="Enter video title"
+                  value={metadataConfig?.title ?? ''}
+                  isDisabled={shouldDisableInput}
+                  onValueChange={(value) => updateMetadataField('title', value)}
+                  classNames={{ mainWrapper: 'my-3' }}
+                />
+                <Divider className="mb-6" />
+              </div>
+              <div>
+                <TextInput
+                  type="text"
+                  label="Artist"
+                  placeholder="Enter artist name"
+                  value={metadataConfig?.artist ?? ''}
+                  isDisabled={shouldDisableInput}
+                  onValueChange={(value) =>
+                    updateMetadataField('artist', value)
+                  }
+                  classNames={{ mainWrapper: 'my-3' }}
+                />
+                <Divider className="mb-6" />
+              </div>
+              <div>
+                <TextInput
+                  type="text"
+                  label="Album"
+                  placeholder="Enter album name"
+                  value={metadataConfig?.album ?? ''}
+                  isDisabled={shouldDisableInput}
+                  onValueChange={(value) => updateMetadataField('album', value)}
+                  classNames={{ mainWrapper: 'my-3' }}
+                />
+                <Divider className="mb-6" />
+              </div>
+              <div>
+                <TextInput
+                  type="text"
+                  label="Genre"
+                  placeholder="Enter genre"
+                  value={metadataConfig?.genre ?? ''}
+                  isDisabled={shouldDisableInput}
+                  classNames={{ mainWrapper: 'my-3' }}
+                  onValueChange={(value) => updateMetadataField('genre', value)}
+                />
+                <Divider className="mb-6" />
+              </div>
+              <div>
+                <TextInput
+                  type="text"
+                  label="Year/Date"
+                  placeholder="Enter year or date"
+                  value={metadataConfig?.year ?? ''}
+                  isDisabled={shouldDisableInput}
+                  classNames={{ mainWrapper: 'my-3' }}
+                  onValueChange={(value) => updateMetadataField('year', value)}
+                />
+                <Divider className="mb-6" />
+              </div>
+              <div className="!mt-[-10px]">
+                <TextArea
+                  type="text"
+                  label="Description"
+                  placeholder="Enter description"
+                  value={metadataConfig?.description ?? ''}
+                  isDisabled={shouldDisableInput}
+                  onValueChange={(value) =>
+                    updateMetadataField('description', value)
+                  }
+                  className="mb-3"
+                />
+                <Divider className="mb-6" />
+              </div>
+              <div className="!mt-[-10px]">
+                <TextArea
+                  type="text"
+                  label="Synopsis"
+                  placeholder="Enter synopsis"
+                  value={metadataConfig?.synopsis ?? ''}
+                  isDisabled={shouldDisableInput}
+                  onValueChange={(value) =>
+                    updateMetadataField('synopsis', value)
+                  }
+                  className="mb-3"
+                />
+                <Divider className="mb-6" />
+              </div>
+              <div className="!mt-[-10px]">
+                <TextArea
+                  type="text"
+                  label="Comment"
+                  placeholder="Enter comment"
+                  value={metadataConfig?.comment ?? ''}
+                  isDisabled={shouldDisableInput}
+                  onValueChange={(value) =>
+                    updateMetadataField('comment', value)
+                  }
+                  className="mb-3"
+                />
+                <Divider className="mb-6" />
+              </div>
+              <div className="!mt-[-10px]">
+                <TextArea
+                  type="text"
+                  label="Copyright"
+                  placeholder="Enter copyright information"
+                  value={metadataConfig?.copyright ?? ''}
+                  isDisabled={shouldDisableInput}
+                  onValueChange={(value) =>
+                    updateMetadataField('copyright', value)
+                  }
+                  className="mb-3"
+                />
+                <Divider className="mb-6" />
+              </div>
+
+              <div>
+                <div className="flex items-center mt-[-10px]">
+                  <Switch
+                    isSelected={Boolean(
+                      metadataConfig?.shouldEnableCreationTime,
+                    )}
+                    onValueChange={(isSelected) => {
+                      updateMetadataField(
+                        'shouldEnableCreationTime',
+                        isSelected,
+                      )
+                    }}
+                    className="flex justify-center items-center"
+                    isDisabled={shouldDisableInput}
+                    size="sm"
+                  >
+                    <div className="flex justify-center items-center">
+                      <span className="text-black1 dark:text-white1 block mr-2 text-xs opacity-90">
+                        Creation Time
+                      </span>
+                    </div>
+                  </Switch>
+                </div>
+                {metadataConfig?.shouldEnableCreationTime &&
+                metadataConfig?.creationTimeRaw ? (
+                  <DatePicker
+                    hideTimeZone
+                    showMonthAndYearPickers
+                    label=""
+                    placeholder="Enter creation time"
+                    isDisabled={
+                      shouldDisableInput ||
+                      !metadataConfig?.shouldEnableCreationTime
+                    }
+                    onChange={(value) => {
+                      updateMetadataField('creationTimeRaw', value as any)
+                    }}
+                    value={metadataConfig?.creationTimeRaw as any}
+                    className="mt-2"
+                  />
+                ) : null}
+              </div>
+            </motion.div>
+          </Card>
+        ) : null}
+      </AnimatePresence>
+    </>
+  )
+}
+
+export default Metadata

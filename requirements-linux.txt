@@ -1,0 +1,2 @@
+# Portable FFmpeg fallback for Linux hosts without a compatible system binary.
+imageio-ffmpeg==0.6.0

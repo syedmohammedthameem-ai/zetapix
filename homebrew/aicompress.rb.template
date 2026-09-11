@@ -1,0 +1,33 @@
+# AUTO-GENERATED FILE. DO NOT EDIT!
+cask "aicompress" do
+  version "{{VERSION}}"
+
+  on_arm do
+    url "https://github.com/{{REPOSITORY_OWNER}}/{{REPOSITORY_NAME}}/releases/download/#{version}/AICompress_#{version}_aarch64.dmg"
+    sha256 "{{ARM64_SHA256}}"
+  end
+
+  on_intel do
+    url "https://github.com/{{REPOSITORY_OWNER}}/{{REPOSITORY_NAME}}/releases/download/#{version}/AICompress_#{version}_x64.dmg"
+    sha256 "{{X64_SHA256}}"
+  end
+
+  name "AICompress"
+  desc "Private, quality-first media compression"
+  homepage "https://github.com/{{REPOSITORY_OWNER}}/{{REPOSITORY_NAME}}"
+
+  depends_on macos: ">= :ventura"
+
+  postflight do
+    system "xattr -cr com.apple.quarantine #{appdir}/AICompress.app"
+  end
+
+  app "AICompress.app"
+
+  zap trash: [
+    "~/Library/Application Support/com.aicompress.app",
+    "~/Library/Caches/com.aicompress.app",
+    "~/Library/Preferences/com.aicompress.app.plist",
+    "~/Library/Saved Application State/com.aicompress.app.savedState",
+  ]
+end

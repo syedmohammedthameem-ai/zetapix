@@ -1,0 +1,21 @@
+---
+const today = new Date();
+---
+
+<footer>
+  &copy; {today.getFullYear()} AICompress contributors.
+  <div class="mx-auto max-w-[100vw] overflow-hidden leading-[0] pb-25" aria-hidden="true">
+    <svg class="block w-full" viewBox="0 0 600 110" preserveAspectRatio="none" fill="black" xmlns="http://www.w3.org/2000/svg" stroke="var(--accent)" stroke-width="0.5">
+      <text x="50%" y="100" text-anchor="middle" font-size="100" font-weight="900" letter-spacing="-6" style="background-image: var(--gradient-primary);">
+        AICompress
+      </text>
+    </svg>
+  </div>
+</footer>
+<style>
+  footer {
+    padding: 2em 1em 2em 1em;
+    color: rgb(var(--gray));
+    text-align: center;
+  }
+</style>

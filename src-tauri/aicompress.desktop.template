@@ -1,0 +1,9 @@
+[Desktop Entry]
+Categories={{categories}}
+Comment={{comment}}
+Exec={{exec}} %F
+Icon={{icon}}
+Name={{name}}
+Terminal=false
+Type=Application
+MimeType=video/mp4;video/quicktime;video/x-m4v;video/x-matroska;video/webm;video/x-msvideo;video/mpeg;video/mp2t;video/x-ms-wmv;video/x-flv;video/3gpp;video/ogg;

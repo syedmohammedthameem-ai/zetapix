@@ -1,0 +1,60 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# production
+/build
+/out/
+/dist/
+
+# misc
+.DS_Store
+*.pem
+latest.json
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+
+/**/.env
+
+analyze
+target
+
+# Local agent and transfer artifacts
+.orbit/
+*.patch
+
+# Nested dependency and build directories
+**/node_modules/
+**/dist/
+**/target/
+
+# Local compression samples and generated media
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.compressed.*
+
+# Encoder binaries, fetched per platform rather than tracked
+src-tauri/bin/aicompress_ffmpeg*
+src-tauri/bin/aicompress_ffprobe*

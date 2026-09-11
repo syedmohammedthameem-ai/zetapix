@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Poppins";
+  font-weight: 100 200 300 400 500 600 700 800 900;
+  src: url("./assets/fonts/poppins/Poppins-Regular.ttf");
+}
+
+@font-face {
+  font-family: "Poppins";
+  font-weight: 100 200 300 400 500 600 700 800 900;
+  src: url("./assets/fonts/poppins/Poppins-Italic.ttf");
+  font-style: italic;
+}
+
+:root {
+  --font-poppins:
+    "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --color-primary: 127 70 226;
+  --color-secondary: 255 106 231;
+  --color-black1: 0 0 0;
+  --color-gray1: 194 194 194;
+  --color-white1: 255 255 255;
+}
+
+*,
+*::after,
+*::before {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-app-region: no-drag;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  font-family: var(--font-poppins);
+}
+
+:root {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: pan-x pan-y;
+}
+
+html {
+  overscroll-behavior: none;
+}
+
+body #app {
+  font-family: var(--font-poppins);
+  margin: 0;
+  padding: 0;
+  background-color: theme("colors.black1");
+  font-family: theme("fontFamily.poppins");
+  width: 100vw;
+  height: 100vh;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+[class="light"] body {
+  background-color: theme("colors.white1");
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+code,
+pre {
+  cursor: inherit;
+}
+
+a {
+  color: theme("colors.primary");
+}
+
+body > * {
+  cursor: default;
+}
+
+#main {
+  z-index: 999 !important;
+}
+
+#portal {
+  z-index: 1000 !important;
+}
+
+::-webkit-scrollbar-corner {
+  @apply bg-zinc-100 dark:bg-zinc-900;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-zinc-100 dark:bg-zinc-900;
+}
+
+::-webkit-scrollbar-thumb {
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  @apply bg-zinc-400 dark:bg-zinc-700;
+}
+
+* {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+}
+
+.timeline-editor-action-left-stretch,
+.timeline-editor-action-right-stretch {
+  @apply bg-zinc-800 dark:bg-zinc-200;
+  @apply !w-2;
+}
+.timeline-editor-action-left-stretch::before,
+.timeline-editor-action-left-stretch::after,
+.timeline-editor-action-right-stretch::before,
+.timeline-editor-action-right-stretch::after {
+  border-right: none !important;
+  border-left: none !important;
+}
+
+.timeline-editor-action-effect-video-boundary
+  > .timeline-editor-action-left-stretch,
+.timeline-editor-action-effect-video-boundary
+  > .timeline-editor-action-right-stretch {
+  @apply !w-0;
+}
+
+.timeline-editor-action {
+  background-color: transparent !important;
+}
+
+*::selection {
+  background-color: theme("colors.primary") !important;
+  color: black !important;
+}
+
+.allow-user-selection {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  cursor: text !important;
+}
+
+/* Tailwind CSS Animations */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@layer base {
+  :root {
+    --animate-ripple: ripple var(--duration, 2s) ease calc(var(--i, 0) * 0.2s)
+      infinite;
+  }
+
+  @keyframes ripple {
+    0%,
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+  }
+}
+.timeline-editor .ReactVirtualized__Grid,
+.timeline-editor .ReactVirtualized__Grid::before,
+.timeline-editor .ReactVirtualized__Grid::after {
+  scroll-behavior: auto !important;
+}
+
+.timeline-editor.enable-smooth-scrolling .ReactVirtualized__Grid,
+.timeline-editor.enable-smooth-scrolling .ReactVirtualized__Grid::before,
+.timeline-editor.enable-smooth-scrolling .ReactVirtualized__Grid::after {
+  scroll-behavior: smooth !important;
+}
+
+.timeline-editor {
+  @apply bg-zinc-100 dark:bg-zinc-900 !important;
+}
+.timeline-editor-time-unit {
+  @apply border-r-zinc-900 dark:border-r-zinc-700 !important;
+}
+
+.timeline-editor-edit-area
+  .ReactVirtualized__Grid::-webkit-scrollbar:horizontal {
+  height: 8px !important;
+  opacity: 0.8 !important;
+  @apply opacity-80 dark:opacity-60 !important;
+}
+
+.timeline-editor-edit-area
+  .ReactVirtualized__Grid::-webkit-scrollbar-thumb:horizontal {
+  min-width: 50px !important;
+  -webkit-border-radius: 10px !important;
+  border-radius: 10px !important;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2) !important;
+  @apply bg-zinc-100 dark:bg-zinc-700 !important;
+  @apply opacity-80 dark:opacity-60;
+}
+.timeline-editor-edit-row {
+  @apply bg-none !important;
+}
+
+.timeline-editor-edit-area
+  .ReactVirtualized__Grid::-webkit-scrollbar:horizontal:hover {
+  @apply opacity-100 !important;
+}
+
+.timeline-editor-edit-area
+  .ReactVirtualized__Grid::-webkit-scrollbar-thumb:horizontal:hover {
+  @apply opacity-100 !important;
+}
+
+.timeline-editor-cursor-top > path {
+  @apply fill-black1 dark:fill-white1 !important;
+}
+
+.timeline-editor-cursor {
+  @apply border-black1 dark:border-white1 !important;
+}
+
+.text-shadow {
+  text-shadow: 4px 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.__rcs-handle-button {
+  width: 45px !important;
+  height: 45px !important;
+}
+
+.advanced-cropper {
+  @apply !bg-white1 dark:!bg-black1;
+}
+
+.select-text > p,
+.select-text > span,
+.select-text > code,
+.select-text > pre,
+.select-text > h1,
+.select-text > h2,
+.select-text > h3,
+.select-text > h4,
+.select-text > h5,
+.select-text > h6 {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}

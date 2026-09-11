@@ -1,0 +1,57 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "editor.defaultFormatter": "biomejs.biome",
+  "cSpell.words": [
+    "appimage",
+    "aicompress",
+    "Deflaters",
+    "Exif",
+    "FFPROBE",
+    "ghostscript",
+    "gifsicle",
+    "gifski",
+    "heroui",
+    "imagequant",
+    "jpegoptim",
+    "matroska",
+    "msvideo",
+    "nsis",
+    "oxipng",
+    "pixmap",
+    "pngquant",
+    "resvg",
+    "skia",
+    "svgcleaner",
+    "tauri",
+    "Triggerer",
+    "Unlisten",
+    "usvg",
+    "valtio",
+    "vtracer"
+  ],
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  },
+  "[svg]": {
+    "editor.defaultFormatter": "jock.svg"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
+}
