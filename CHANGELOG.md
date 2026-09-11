@@ -19,6 +19,8 @@
   unusable video quality.
 - Added a headless Linux compression command with system-tool and bundled-tool
   discovery.
+- Added a Windows build pipeline that runs on a Windows runner and produces
+  the NSIS installer and MSI, fetching the FFmpeg sidecars at build time.
 - Disabled automatic updates until an AICompress release endpoint and signing
   key are configured.
 

@@ -20,6 +20,39 @@ const POLL_INTERVAL: Duration = Duration::from_millis(1500);
 /// therefore never read half written.
 const STABLE_POLLS: u8 = 2;
 
+/// True when `path` sits inside `directory`.
+///
+/// Windows path comparison ignores case, so a case-sensitive test would let an
+/// output folder nested inside the watched folder slip through, and the app
+/// would queue its own results as fresh input and compress forever. Comparing
+/// components rather than string prefixes also stops `/media/output2` from
+/// looking like it sits inside `/media/output`.
+fn is_within(path: &Path, directory: &Path) -> bool {
+    let mut wanted = directory.components();
+    let mut actual = path.components();
+
+    loop {
+        match (wanted.next(), actual.next()) {
+            (None, _) => return true,
+            (Some(_), None) => return false,
+            (Some(expected), Some(found)) => {
+                let matches = if cfg!(windows) {
+                    expected
+                        .as_os_str()
+                        .to_string_lossy()
+                        .eq_ignore_ascii_case(&found.as_os_str().to_string_lossy())
+                } else {
+                    expected == found
+                };
+
+                if !matches {
+                    return false;
+                }
+            }
+        }
+    }
+}
+
 /// Tracks how long each path has held its size. A file is only ready once it
 /// has stopped growing, which is what keeps a file still being copied into the
 /// watched directory from being handed over half written.
@@ -166,7 +199,7 @@ async fn watch_loop(
 
                     // An output directory nested inside the watched directory
                     // would otherwise feed compressed files back in forever.
-                    if Path::new(&file).starts_with(&output) {
+                    if is_within(Path::new(&file), &output) {
                         continue;
                     }
 
@@ -212,7 +245,38 @@ async fn watch_loop(
 
 #[cfg(test)]
 mod tests {
-    use super::StabilityTracker;
+    use super::{is_within, StabilityTracker};
+    use std::path::Path;
+
+    #[test]
+    fn spots_a_file_inside_the_output_directory() {
+        assert!(is_within(
+            Path::new("/media/out/clip.mp4"),
+            Path::new("/media/out")
+        ));
+        assert!(!is_within(
+            Path::new("/media/in/clip.mp4"),
+            Path::new("/media/out")
+        ));
+    }
+
+    #[test]
+    fn a_sibling_with_a_shared_prefix_is_not_inside() {
+        // A plain string prefix test would wrongly call this a match.
+        assert!(!is_within(
+            Path::new("/media/output2/clip.mp4"),
+            Path::new("/media/output")
+        ));
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn windows_path_case_does_not_matter() {
+        assert!(is_within(
+            Path::new(r"C:\Media\Out\clip.mp4"),
+            Path::new(r"c:\media\out")
+        ));
+    }
 
     #[test]
     fn holds_a_file_back_until_its_size_settles() {

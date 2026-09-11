@@ -487,7 +487,7 @@ async function freeDestination(
 ): Promise<string> {
   for (let attempt = 0; attempt < 100; attempt += 1) {
     const suffix = attempt === 0 ? '' : `-${attempt}`
-    const candidate = `${directory}/${base}${suffix}.${extension}`
+    const candidate = joinPath(directory, `${base}${suffix}.${extension}`)
     try {
       await getFileMetadata(candidate)
     } catch {
@@ -495,6 +495,18 @@ async function freeDestination(
     }
   }
   throw new Error(`Too many files named ${base} in the output folder.`)
+}
+
+/**
+ * Joins a directory and a file name using whichever separator the directory
+ * already uses. Windows accepts a forward slash, but a path that reads
+ * `C:\\Media\\Out/clip.mp4` looks broken to anyone reading the results table.
+ */
+function joinPath(directory: string, name: string): string {
+  const trimmed = directory.replace(/[/\\]+$/, '')
+  const separator =
+    trimmed.includes('\\') && !trimmed.includes('/') ? '\\' : '/'
+  return `${trimmed}${separator}${name}`
 }
 
 function baseName(fileName: string): string {
