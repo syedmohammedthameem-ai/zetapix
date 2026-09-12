@@ -35,6 +35,7 @@ use tauri_commands::{
         get_image_color_info, get_image_dimensions,
     },
     media::compress_media_batch,
+    scan::scan_folder,
     updater::{check_update, download_and_install_update},
     watch::{start_directory_watch, stop_directory_watch},
 };
@@ -340,6 +341,7 @@ async fn main() {
             clear_dock_badge,
             check_update,
             download_and_install_update,
+            scan_folder,
             get_available_chips,
             estimate_compression,
             start_directory_watch,

@@ -9,6 +9,7 @@ import { estimateCompression } from '@/tauri/commands/feasibility'
 import { getVideoBasicInfo } from '@/tauri/commands/ffprobe'
 import { getFileMetadata, moveFile } from '@/tauri/commands/fs'
 import { compressMediaBatch } from '@/tauri/commands/media'
+import { scanFolder } from '@/tauri/commands/scan'
 import { startDirectoryWatch, stopDirectoryWatch } from '@/tauri/commands/watch'
 import {
   BatchMediaCompressionProgress,
@@ -50,6 +51,15 @@ export type WatchItem = {
   message?: string
 }
 
+/** What is sitting in the source folder, and what the ratio would do to it. */
+export type SourcePreview = {
+  fileCount: number
+  totalBytes: number
+  /** Files present but not a format the app handles. */
+  skippedCount: number
+  isScanning: boolean
+}
+
 export type WatchState = {
   sourceDir: string
   outputDir: string
@@ -64,6 +74,7 @@ export type WatchState = {
   filter: string
   /** When off, Start makes one pass and stops instead of staying armed. */
   autoCompress: boolean
+  preview: SourcePreview
   isWatching: boolean
   isProcessing: boolean
   error: string | null
@@ -82,6 +93,12 @@ const watchInitialState: WatchState = {
   includeSubfolders: false,
   filter: '',
   autoCompress: true,
+  preview: {
+    fileCount: 0,
+    totalBytes: 0,
+    skippedCount: 0,
+    isScanning: false,
+  },
   isWatching: false,
   isProcessing: false,
   error: null,
@@ -192,6 +209,55 @@ export async function stopWatching(): Promise<void> {
   try {
     await stopDirectoryWatch()
   } catch (error) {
+    watchProxy.error = messageFrom(error)
+  }
+}
+
+let scanToken = 0
+
+/**
+ * Reads the source folder so the operator can see what a ratio will do before
+ * committing to it. Directory entries only, so it stays responsive on a folder
+ * with hundreds of files, and a later scan always supersedes an earlier one.
+ */
+export async function refreshPreview(): Promise<void> {
+  const directory = watchProxy.sourceDir
+  const token = ++scanToken
+
+  if (!directory) {
+    watchProxy.preview = {
+      fileCount: 0,
+      totalBytes: 0,
+      skippedCount: 0,
+      isScanning: false,
+    }
+    return
+  }
+
+  watchProxy.preview.isScanning = true
+
+  try {
+    const scan = await scanFolder(directory, watchProxy.includeSubfolders)
+    if (token !== scanToken) return
+
+    const media = scan.files.filter((file) =>
+      isSupportedMediaExtension(file.extension),
+    )
+
+    watchProxy.preview = {
+      fileCount: media.length,
+      totalBytes: media.reduce((sum, file) => sum + file.sizeBytes, 0),
+      skippedCount: scan.files.length - media.length,
+      isScanning: false,
+    }
+  } catch (error) {
+    if (token !== scanToken) return
+    watchProxy.preview = {
+      fileCount: 0,
+      totalBytes: 0,
+      skippedCount: 0,
+      isScanning: false,
+    }
     watchProxy.error = messageFrom(error)
   }
 }
